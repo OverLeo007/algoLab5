@@ -135,10 +135,11 @@ class IO:
 def generate_input(file_name="input.txt"):
     from random import shuffle
     with open(file_name, "w") as file:
-        res = [randint(-100, 1000) for _ in range(1, 1000)]
+        res = [randint(-100, 1000) for _ in range(1, 201)]
         shuffle(res)
         for i in res:
             file.write(f"{i}\n")
+
 
 @timing
 def my_sort(src: Union[Iterable, str] = "input.txt",
@@ -147,7 +148,6 @@ def my_sort(src: Union[Iterable, str] = "input.txt",
             type_data: Optional[str] = None,
             key: Optional[str] = None,
             bsize=1000):
-
     if output == "":
         output = None
 
@@ -295,25 +295,52 @@ def my_sort(src: Union[Iterable, str] = "input.txt",
             file.copy_to(out)
     else:
         out = IO(output, "w")
+        merge_to_one(res_files, out, reverse)
+
+
+def merge_to_one(src: list[IO, ...], out: IO, reverse=False):
+    is_read_dict = {i: {"value": file.read(), "is_read": False}
+                    for i, file in enumerate(src)}
+
+    def find_val():
+        func = max if reverse else min
+        return func(is_read_dict.items(), key=lambda x: x[1]["value"])
+
+    def dict_upd():
+        to_del = []
+        for k, v in is_read_dict.items():
+            if v["is_read"] is True:
+                v["value"] = src[k].read()
+                v["is_read"] = False
+
+            if v["value"] == EOF:
+                to_del.append(k)
+        for k in to_del:
+            del is_read_dict[k]
+
+    while is_read_dict:
+        need_val = find_val()
+        out.write(need_val[1]["value"])
+        is_read_dict[need_val[0]]["is_read"] = True
+        dict_upd()
 
 
 def main():
-    # read_1 = IO("line1.txt", "r", is_temp=True)
-    # read_2 = IO("line2.txt", "r", is_temp=True)
-    # print(read_1.is_empty())
-    # print(read_1.copy_to(read_2))
-    # print(read_2.is_empty())
-    is_sorted("input0.txt")
+    src = [IO(filename, "r", data_type="i") for filename in
+           filter(lambda x: x.startswith("input"), os.listdir())]
+    out = IO("output.txt", "w")
+    merge_to_one(src, out)
 
 
 if __name__ == '__main__':
-    # filenames = []
-    # for i in range(10):
-    #     new_name = f"input{i}.txt"
-    #     filenames.append(new_name)
-    #     generate_input(new_name)
-    # my_sort(filenames, bsize=10)
-    # for filename in filenames:
-    #     print(filename, is_sorted(filename))
+    filenames = []
+    for i in range(10):
+        new_name = f"input{i}.txt"
+        filenames.append(new_name)
+        generate_input(new_name)
+    my_sort(filenames, output="output.txt", type_data="i", bsize=10)
+    for filename in filenames:
+        print(filename, is_sorted(filename))
     # generate_input()
-    my_sort("27989_B.txt", type_data="i", bsize=1000)
+    # my_sort("27989_B.txt", type_data="i", bsize=1000)
+    # main()
