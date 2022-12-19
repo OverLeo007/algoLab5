@@ -11,7 +11,12 @@ TEMP_DIR = r"temp"
 EOF = "¶"
 
 
-def is_sorted(filename):
+def is_sorted(filename: str) -> bool:
+    """
+    Функция проверки txt файла на отсортированность по неубвыванию
+    :param filename: имя файла
+    :return: bool результат проверки
+    """
     with open(filename) as file:
         res = list(map(lambda x: int(x.replace("\n", "")), file.readlines()))
         return res == sorted(res)
@@ -19,7 +24,7 @@ def is_sorted(filename):
 
 def timing(f: Callable):
     """
-    Декоратор для засечения времени выполнения отрисовки
+    Декоратор для вычисления времени выполнения сортировки
     @param f: функция, время которой засекаем
     """
 
@@ -133,6 +138,10 @@ class IO:
 
 
 def generate_input(file_name="input.txt"):
+    """
+    Функция генерации случайно заполненного txt файла
+    :param file_name:
+    """
     from random import shuffle
     with open(file_name, "w") as file:
         res = [randint(-100, 1000) for _ in range(1, 201)]
@@ -147,7 +156,16 @@ def my_sort(src: Union[Iterable, str] = "input.txt",
             reverse: bool = False,
             type_data: Optional[str] = None,
             key: Optional[str] = None,
-            bsize=1000):
+            bsize=1000) -> None:
+    """
+    Функция сортировки, реализующая алгоритм сбалансированного двухпутевого слияния
+    :param src: файл(ы) с исходными данными
+    :param output: выходной файл
+    :param reverse: флаг сортировки по невозрастанию
+    :param type_data: тип передаваемых значений
+    :param key: ключ для csv файла
+    :param bsize: размер буфера для внутренней сортировки
+    """
     if output == "":
         output = None
 
@@ -158,7 +176,13 @@ def my_sort(src: Union[Iterable, str] = "input.txt",
     else:
         input_files.append(IO(src, "r", type_data))
 
-    def external_sort(inp: IO, file_num: int = 1):
+    def external_sort(inp: IO, file_num: int = 1) -> IO:
+        """
+        Функция внешней сортировки
+        :param inp: Открытый файл, обернутый в IO с исходным набором данных
+        :param file_num: номер файла
+        :return: файл, обернутый в IO, в котором хранятся отсортированные значения
+        """
         if inp.is_empty():
             return inp
         tape1 = IO(f"line1_{file_num}.txt", "w", type_data, is_temp=True)
@@ -168,7 +192,10 @@ def my_sort(src: Union[Iterable, str] = "input.txt",
         pass_num = 1
 
         def split():
-
+            """
+            Функция предварительного разбиения исходного файла на два,
+            сортируя блоки по bsize элементов
+            """
             is_tape1 = True
 
             while True:
@@ -185,6 +212,11 @@ def my_sort(src: Union[Iterable, str] = "input.txt",
                     break
 
         def merge():
+            """
+            Функция слияния последовательностей из файлов
+            :return: False, если требуется еще merge(),
+            файл, в котором хранятся отсортированные данные в противном случае
+            """
             if pass_num % 2 != 0:
                 tape1.change_mode("r")
                 tape2.change_mode("r")
@@ -298,7 +330,13 @@ def my_sort(src: Union[Iterable, str] = "input.txt",
         merge_to_one(res_files, out, reverse)
 
 
-def merge_to_one(src: list[IO, ...], out: IO, reverse=False):
+def merge_to_one(src: list[IO, ...], out: IO, reverse=False) -> None:
+    """
+    Функция слияния отсортированных файлов в один
+    :param src: исходные файлы
+    :param out: выходной файл
+    :param reverse: флаг сортировки по невозрастанию
+    """
     is_read_dict = {i: {"value": file.read(), "is_read": False}
                     for i, file in enumerate(src)}
 
@@ -334,13 +372,13 @@ def main():
 
 if __name__ == '__main__':
     filenames = []
-    for i in range(10):
-        new_name = f"input{i}.txt"
+    for ind in range(10):
+        new_name = f"input{ind}.txt"
         filenames.append(new_name)
         generate_input(new_name)
     my_sort(filenames, output="output.txt", type_data="i", bsize=10)
-    for filename in filenames:
-        print(filename, is_sorted(filename))
+    for name in filenames:
+        print(name, is_sorted(name))
     # generate_input()
     # my_sort("27989_B.txt", type_data="i", bsize=1000)
     # main()
