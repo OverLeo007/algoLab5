@@ -4,7 +4,6 @@ from typing import Optional, Callable
 
 
 def merge_sort(array: list, reverse: bool = False,
-               key: Optional[Callable] = None,
                cmp: Optional[Callable] = None) -> list:
     """
     Реализация сортировки слиянием
@@ -15,7 +14,6 @@ def merge_sort(array: list, reverse: bool = False,
     @param cmp: компаратор для значений
     @return: отсортированный массив
     """
-    key = key if key is not None else lambda x: x
     cmp = cmp if cmp is not None else lambda x, y: x < y
 
     def insertion_sort(arr):
@@ -23,7 +21,7 @@ def merge_sort(array: list, reverse: bool = False,
             temp = arr[i]
             j = i - 1
             while j >= 0 and \
-                    (cmp(key(temp),  key(arr[j])) if reverse else cmp(key(arr[j]),  key(temp))):
+                    cmp(temp, arr[j]):
                 arr[j + 1] = arr[j]
                 j -= 1
             arr[j + 1] = temp
@@ -44,9 +42,7 @@ def merge_sort(array: list, reverse: bool = False,
             i = j = k = 0
 
             while i < len(left) and j < len(right):
-                if cmp(key(left[i]), key(right[j])) \
-                        if not reverse else \
-                        cmp(key(right[j]), key(left[i])):
+                if cmp(left[i], right[j]):
                     arr[k] = left[i]
                     i += 1
                 else:
