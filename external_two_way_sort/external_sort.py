@@ -5,8 +5,7 @@ import os
 from time import time
 from typing import Optional, Callable, Union, Iterable
 
-from internal_sort import merge_sort
-
+from external_two_way_sort.internal_sort import merge_sort
 TEMP_DIR = r"temp"
 EOF = "¶"
 CsvRow = dict[str, Union[int, float, str]]
@@ -68,13 +67,13 @@ class IO:
         self.file = open(self.path, mode, newline="") if not self.is_txt \
             else open(self.path, mode)
         self.key = key_val
+
         if not self.is_txt:
             self.delimiter = delimiter
             if mode == "r":
                 self.csv_access = csv.DictReader(self.file,
                                                  delimiter=delimiter)
                 self.header = self.csv_access.fieldnames
-
             else:
                 self.csv_access = csv.DictWriter(self.file, header,
                                                  delimiter=delimiter)
@@ -271,6 +270,7 @@ class IO:
 
     def __del__(self) -> None:
         self.file.close()
+        # print("123", self.is_txt)
         if self.is_temp:
             os.remove(self.path)
         try:
@@ -558,4 +558,6 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    generate_input()
+    my_sort("input.txt", type_data="i")
+    # main()
